@@ -5,6 +5,7 @@ var DataSourcer = require('data-sourcer');
 var GeoIpNativeLite = require('geoip-native-lite');
 var net = require('net');
 var path = require('path');
+require('events').EventEmitter.defaultMaxListeners = 25
 
 GeoIpNativeLite.loadDataSync({ ipv4: true, ipv6: true, cache: true });
 
@@ -98,7 +99,7 @@ var ProxyLists = module.exports = {
 			/*
 				The maximum number of simultaneous requests. Set to 0 for unlimited.
 			*/
-			concurrency: 0,
+			concurrency: 1,
 			/*
 				The time (in milliseconds) between each request. Set to 0 for no delay.
 			*/
