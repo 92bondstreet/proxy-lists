@@ -208,6 +208,9 @@ var ProxyLists = module.exports = {
 		options = _.defaults(options || {}, {
 			getDataMethodName: 'getProxies',
 			sourcesDir: path.join(__dirname, 'sources'),
+      'browser': {
+        executablePath: '/usr/bin/chromium-browser'
+      }
 		});
 
 		var dataSourcer = new DataSourcer(options);
