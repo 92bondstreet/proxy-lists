@@ -3,6 +3,7 @@
 'use strict';
 
 var _ = require('underscore');
+var delay = require('delay');
 var fs = require('fs');
 var path = require('path');
 var program = require('commander');
@@ -265,26 +266,43 @@ program
 			'ipTypes'
 		]);
 
-		var sources = ProxyLists.listSources(options);
-		var sourceOptions = _.omit(options, 'sourcesWhiteList', 'sourcesBlackList');
-		var sourcesDone = {};
-		_.each(sources, function(source) {
-			try {
-				ProxyLists.getProxiesFromSource(source.name, sourceOptions)
-					.on('data', onData)
-					.on('error', function(error) {
-						log('Error while scraping', source.name + ':', error);
-					})
-					.once('end', function() {
-						log('Finished scraping from', source.name);
-						sourcesDone[source.name] = true;
-						tryEndOutput();
-					});
-			} catch (error) {
-				log(error);
-			}
-		});
+    var sources = ProxyLists.listSources(options);
+    var sourceOptions = _.omit(options, 'sourcesWhiteList', 'sourcesBlackList');
+    var sourcesDone = {};
 
+    async function getProxiesFromSource(source, sourceOptions) {
+      return new Promise(resolve => {
+        try {
+  				ProxyLists.getProxiesFromSource(source.name, sourceOptions)
+  					.on('data', data => {
+              onData(data);
+              return resolve(data)
+            })
+  					.on('error', function(error) {
+  						log('Error while scraping', source.name + ':', error);
+              return resolve()
+  					})
+  					.once('end', function() {
+  						log('Finished scraping from', source.name);
+  						sourcesDone[source.name] = true;
+  						tryEndOutput();
+              return resolve()
+  					});
+  			} catch (error) {
+  				log(error);
+          return resolve()
+  			}
+      });
+    }
+
+    async function start () {
+      for (var source of sources) {
+        console.log(`starting ${source.name}`);
+        await getProxiesFromSource(source, sourceOptions);
+      }
+    }
+
+    start();
 		startOutput();
 	});
 
