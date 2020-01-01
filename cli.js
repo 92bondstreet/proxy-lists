@@ -154,6 +154,8 @@ program
 			var args = Array.prototype.slice.call(arguments);
 			var message = args.join(' ');
 			logStream.write(message + '\n');
+
+      console.error(message);
 		}
 
 		var numWriting = 0;
