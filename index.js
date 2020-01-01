@@ -209,7 +209,8 @@ var ProxyLists = module.exports = {
 			getDataMethodName: 'getProxies',
 			sourcesDir: path.join(__dirname, 'sources'),
       'browser': {
-        executablePath: '/usr/bin/chromium-browser'
+        executablePath: '/usr/bin/chromium-browser',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
       }
 		});
 
