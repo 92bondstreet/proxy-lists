@@ -113,11 +113,17 @@ program
 		value,
 		'proxy-lists.log'
 	)
+  .option(
+		'-v, --verbose',
+		'Log output with console.log',
+		false
+	)
 	.action(function() {
 
 		var outputFormat = this.outputFormat;
 		var stdout = this.stdout;
 		var outputFile = this.outputFile;
+    var verbose = this.verbose;
 
 		if (outputFile.indexOf('/') === -1) {
 			outputFile = path.join(process.cwd(), outputFile);
@@ -155,7 +161,7 @@ program
 			var message = args.join(' ');
 			logStream.write(message + '\n');
 
-      console.error(message);
+      verbose && console.log(message);
 		}
 
 		var numWriting = 0;
@@ -297,14 +303,14 @@ program
       });
     }
 
-    async function start () {
+    async function getProxies () {
       for (var source of sources) {
-        console.log(`starting ${source.name}`);
+        log(`starting ${source.name}`);
         await getProxiesFromSource(source, sourceOptions);
       }
     }
 
-    start();
+    getProxies();
 		startOutput();
 	});
 

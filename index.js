@@ -1,16 +1,15 @@
-'use strict';
+"use strict";
 
-var _ = require('underscore');
-var DataSourcer = require('data-sourcer');
-var GeoIpNativeLite = require('geoip-native-lite');
-var net = require('net');
-var path = require('path');
-require('events').EventEmitter.defaultMaxListeners = 25
+var _ = require("underscore");
+var DataSourcer = require("data-sourcer");
+var GeoIpNativeLite = require("geoip-native-lite");
+var net = require("net");
+var path = require("path");
+require("events").EventEmitter.defaultMaxListeners = 25;
 
 GeoIpNativeLite.loadDataSync({ ipv4: true, ipv6: true, cache: true });
 
-var ProxyLists = module.exports = {
-
+var ProxyLists = (module.exports = {
 	DataSourcer: DataSourcer,
 
 	defaultOptions: {
@@ -21,7 +20,7 @@ var ProxyLists = module.exports = {
 				'strict' mode will only allow proxies that have the 'anonymityLevel' property equal to 'elite'; ie. proxies that are missing the 'anonymityLevel' property will be excluded.
 				'loose' mode will allow proxies that have the 'anonymityLevel' property of 'elite' as well as those that are missing the 'anonymityLevel' property.
 		*/
-		filterMode: 'strict',
+		filterMode: "strict",
 
 		/*
 			Get proxies for the specified countries.
@@ -49,14 +48,14 @@ var ProxyLists = module.exports = {
 
 			To get all proxies, regardless of protocol, set this option to NULL.
 		*/
-		protocols: ['http', 'https'],
+		protocols: ["http", "https"],
 
 		/*
 			Anonymity level.
 
 			To get all proxies, regardless of anonymity level, set this option to NULL.
 		*/
-		anonymityLevels: ['anonymous', 'elite'],
+		anonymityLevels: ["anonymous", "elite"],
 
 		/*
 			Load GeoIp data for these types of IP addresses. Default is only ipv4.
@@ -64,7 +63,7 @@ var ProxyLists = module.exports = {
 			To include both ipv4 and ipv6:
 			['ipv4', 'ipv6']
 		*/
-		ipTypes: ['ipv4'],
+		ipTypes: ["ipv4"],
 
 		/*
 			Include proxy sources by name.
@@ -85,7 +84,7 @@ var ProxyLists = module.exports = {
 		/*
 			Full path to the sources directory.
 		*/
-		sourcesDir: path.join(__dirname, 'sources'),
+		sourcesDir: path.join(__dirname, "sources"),
 
 		/*
 			Set to TRUE to have all asynchronous operations run in series.
@@ -103,7 +102,7 @@ var ProxyLists = module.exports = {
 			/*
 				The time (in milliseconds) between each request. Set to 0 for no delay.
 			*/
-			delay: 0,
+			delay: 0
 		},
 
 		/*
@@ -115,28 +114,28 @@ var ProxyLists = module.exports = {
 		defaultRequestOptions: null
 	},
 
-	_protocols: ['http', 'https', 'socks4', 'socks5'],
-	_anonymityLevels: ['transparent', 'anonymous', 'elite'],
-	_ipTypes: ['ipv4', 'ipv6'],
+	_protocols: ["http", "https", "socks4", "socks5"],
+	_anonymityLevels: ["transparent", "anonymous", "elite"],
+	_ipTypes: ["ipv4", "ipv6"],
 
 	// Sources that were added via ProxyLists.addSource(name, source)
 	_sources: [],
 
 	// Get proxies from all sources.
 	getProxies: function(options) {
-
 		options = options || {};
 		var emitter = DataSourcer.prototype.prepareSafeEventEmitter();
-		var onData = emitter.emit.bind(emitter, 'data');
-		var onError = emitter.emit.bind(emitter, 'error');
-		var onEnd = emitter.emit.bind(emitter, 'end');
+		var onData = emitter.emit.bind(emitter, "data");
+		var onError = emitter.emit.bind(emitter, "error");
+		var onEnd = emitter.emit.bind(emitter, "end");
 		var sourcerOptions = this.toSourcerOptions(options);
 		var dataSourcer = this.prepareDataSourcer(options);
 		sourcerOptions.process = this.processProxy.bind(this);
-		dataSourcer.getData(sourcerOptions)
-			.on('data', onData)
-			.on('error', onError)
-			.on('end', function() {
+		dataSourcer
+			.getData(sourcerOptions)
+			.on("data", onData)
+			.on("error", onError)
+			.on("end", function() {
 				try {
 					dataSourcer.close(function(error) {
 						if (error) onError(error);
@@ -153,19 +152,19 @@ var ProxyLists = module.exports = {
 
 	// Get proxies from a single source.
 	getProxiesFromSource: function(name, options) {
-
 		options = options || {};
 		var emitter = DataSourcer.prototype.prepareSafeEventEmitter();
-		var onData = emitter.emit.bind(emitter, 'data');
-		var onError = emitter.emit.bind(emitter, 'error');
-		var onEnd = emitter.emit.bind(emitter, 'end');
+		var onData = emitter.emit.bind(emitter, "data");
+		var onError = emitter.emit.bind(emitter, "error");
+		var onEnd = emitter.emit.bind(emitter, "end");
 		var sourcerOptions = this.toSourcerOptions(options);
 		var dataSourcer = this.prepareDataSourcer(options);
 		sourcerOptions.process = this.processProxy.bind(this);
-		dataSourcer.getDataFromSource(name, sourcerOptions)
-			.on('data', onData)
-			.on('error', onError)
-			.on('end', function() {
+		dataSourcer
+			.getDataFromSource(name, sourcerOptions)
+			.on("data", onData)
+			.on("error", onError)
+			.on("end", function() {
 				try {
 					dataSourcer.close(function(error) {
 						if (error) onError(error);
@@ -181,7 +180,6 @@ var ProxyLists = module.exports = {
 	},
 
 	listSources: function(options) {
-
 		options = options || {};
 		var sourcerOptions = this.toSourcerOptions(options);
 		var dataSourcer = this.prepareDataSourcer(options);
@@ -189,7 +187,6 @@ var ProxyLists = module.exports = {
 	},
 
 	addSource: function(name, source, options) {
-
 		options = options || {};
 		var alreadyAdded = !!_.findWhere(this._sources, { name: name });
 		if (alreadyAdded) {
@@ -199,20 +196,22 @@ var ProxyLists = module.exports = {
 		dataSourcer.addSource(name, source);
 		this._sources.push({
 			name: name,
-			definition: source,
+			definition: source
 		});
 	},
 
 	prepareDataSourcer: function(options) {
-
 		options = _.defaults(options || {}, {
-			getDataMethodName: 'getProxies',
-			sourcesDir: path.join(__dirname, 'sources'),
-      'browser': {
-        executablePath: '/usr/bin/chromium-browser',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      }
+			getDataMethodName: "getProxies",
+			sourcesDir: path.join(__dirname, "sources")
 		});
+
+		if (process.env.DOCKER) {
+			options.browser = _.defaults(options.browser || {}, {
+				executablePath: "/usr/bin/chromium-browser",
+				args: ["--no-sandbox", "--disable-setuid-sandbox"]
+			});
+		}
 
 		var dataSourcer = new DataSourcer(options);
 
@@ -224,7 +223,6 @@ var ProxyLists = module.exports = {
 	},
 
 	processProxy: function(proxy) {
-
 		try {
 			proxy.country = GeoIpNativeLite.lookup(proxy.ipAddress);
 		} catch (error) {
@@ -235,49 +233,68 @@ var ProxyLists = module.exports = {
 	},
 
 	toSourcerOptions: function(options) {
-
 		options = options || {};
 
-		var sourcerOptions = _.omit(options,
-			'filterMode',
-			'countries',
-			'countriesBlackList',
-			'protocols',
-			'anonymityLevels',
-			'ipTypes'
+		var sourcerOptions = _.omit(
+			options,
+			"filterMode",
+			"countries",
+			"countriesBlackList",
+			"protocols",
+			"anonymityLevels",
+			"ipTypes"
 		);
 
 		sourcerOptions.filter = {
 			mode: options.filterMode || this.defaultOptions.filterMode,
 			include: {},
-			exclude: {},
+			exclude: {}
 		};
 
-		_.each({
-			country: 'countries',
-			protocols: 'protocols',
-			anonymityLevel: 'anonymityLevels',
-		}, function(oldKey, newKey) {
-			var optionValue = options[oldKey];
-			if (!_.isUndefined(optionValue) && !_.isNull(optionValue) && _.isArray(optionValue)) {
-				sourcerOptions.filter.include[newKey] = _.invoke(optionValue, 'toLowerCase');
+		_.each(
+			{
+				country: "countries",
+				protocols: "protocols",
+				anonymityLevel: "anonymityLevels"
+			},
+			function(oldKey, newKey) {
+				var optionValue = options[oldKey];
+				if (
+					!_.isUndefined(optionValue) &&
+					!_.isNull(optionValue) &&
+					_.isArray(optionValue)
+				) {
+					sourcerOptions.filter.include[newKey] = _.invoke(
+						optionValue,
+						"toLowerCase"
+					);
+				}
 			}
-		});
+		);
 
-		_.each({
-			country: 'countriesBlackList',
-		}, function(oldKey, newKey) {
-			var optionValue = options[oldKey];
-			if (!_.isUndefined(optionValue) && !_.isNull(optionValue) && _.isArray(optionValue)) {
-				sourcerOptions.filter.exclude[newKey] = _.invoke(optionValue, 'toLowerCase');
+		_.each(
+			{
+				country: "countriesBlackList"
+			},
+			function(oldKey, newKey) {
+				var optionValue = options[oldKey];
+				if (
+					!_.isUndefined(optionValue) &&
+					!_.isNull(optionValue) &&
+					_.isArray(optionValue)
+				) {
+					sourcerOptions.filter.exclude[newKey] = _.invoke(
+						optionValue,
+						"toLowerCase"
+					);
+				}
 			}
-		});
+		);
 
 		return sourcerOptions;
 	},
 
 	isValidProxy: function(proxy, options) {
-
 		options = _.defaults(options || {}, {
 			validateIp: true
 		});
@@ -285,7 +302,8 @@ var ProxyLists = module.exports = {
 		// 'ipAddress' is required.
 		if (!proxy.ipAddress) return false;
 		// Valid 'ipAddress' is optional.
-		if (options.validateIp && !this.isValidIpAddress(proxy.ipAddress)) return false;
+		if (options.validateIp && !this.isValidIpAddress(proxy.ipAddress))
+			return false;
 		// 'port' is required.
 		if (!proxy.port) return false;
 		// Valid port is required.
@@ -295,7 +313,10 @@ var ProxyLists = module.exports = {
 			if (!this.isValidProxyProtocols(proxy.protocols)) return false;
 		}
 		// 'anonymityLevel' is not required, but if it's set it should be valid.
-		if (!_.isUndefined(proxy.anonymityLevel) && !_.isNull(proxy.anonymityLevel)) {
+		if (
+			!_.isUndefined(proxy.anonymityLevel) &&
+			!_.isNull(proxy.anonymityLevel)
+		) {
 			if (!this.isValidAnonymityLevel(proxy.anonymityLevel)) return false;
 		}
 		// Valid proxy.
@@ -303,29 +324,30 @@ var ProxyLists = module.exports = {
 	},
 
 	isValidPort: function(port) {
-
 		return _.isNumber(port) && parseInt(port).toString() === port.toString();
 	},
 
 	isValidProxyProtocols: function(protocols) {
-
-		return _.isArray(protocols) && _.every(protocols, function(protocol) {
-			return ProxyLists.isValidProxyProtocol(protocol);
-		});
+		return (
+			_.isArray(protocols) &&
+			_.every(protocols, function(protocol) {
+				return ProxyLists.isValidProxyProtocol(protocol);
+			})
+		);
 	},
 
 	isValidProxyProtocol: function(protocol) {
-
 		return _.isString(protocol) && _.contains(this._protocols, protocol);
 	},
 
 	isValidAnonymityLevel: function(anonymityLevel) {
-
-		return _.isString(anonymityLevel) && _.contains(this._anonymityLevels, anonymityLevel);
+		return (
+			_.isString(anonymityLevel) &&
+			_.contains(this._anonymityLevels, anonymityLevel)
+		);
 	},
 
 	isValidIpAddress: function(ipAddress) {
-
 		return net.isIP(ipAddress) !== 0;
 	}
-};
+});
